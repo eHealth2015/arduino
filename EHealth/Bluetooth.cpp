@@ -65,7 +65,7 @@
       String data = this->mem->getNext();
       msg.concat(data);
     }
-    msg.concat(";");
+    //msg.concat(";");
     Serial.println(msg);
   }
 
@@ -78,10 +78,9 @@
     msg.concat("|");
     for(int i = 0; i<1;i++){ // nombre de capteurs = 1
       String data = this->mem->getNext(); 
-      //msg.concat(";");
       msg.concat(data);
     }
-    msg.concat(";");
+    //msg.concat(";");
     Serial.println(msg);
   }
   

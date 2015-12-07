@@ -15,7 +15,6 @@ struct measure {
   double  value;
 };
 
-
 class Memory{
   private:
     unsigned int size;

@@ -7,7 +7,7 @@
   #include "SDcard.h"
   
   // Les valeurs qui vont être lues
-  int airflow=0;
+  double airflow=0;
   //int bpm=0;
   //int oxy=0;
   
@@ -37,7 +37,8 @@
 
   // Compteur temps
   int timer=0;
-  File myfile;
+  double mean_airflow=0;
+  int timestamp=0;  
 
   Memory mem = Memory(48);
   Bluetooth bt = Bluetooth(&mem);
@@ -63,18 +64,24 @@
      }
     else if (DELAY == NORMAL){
       // Store the values in the SD card
-      sd.writefile('H',airflow);
+      
       timer++;
+      mean_airflow += airflow;
+      Serial.println(airflow);
       if (timer == 10){
         // Process valeurs moyennes
         // Stocker les valeurs moyennes "mean_ariflow"
-        mem.save('H',airflow);
-        bt.data_sd();
+        sd.writefile('H',(mean_airflow/timer),getTimestamp());
+        Serial.println("MEAN");
+        Serial.println((mean_airflow/timer));
+        mean_airflow=0;
+        //mem.save('H',airflow);
+        //bt.data_sd();
         timer = 0;
+
         // Foonction delete sur carte SD des 3 fichiers
       }
     }
-    
     //mem.save('H',airflow);
     //bt.data_rt();
   }
@@ -105,6 +112,10 @@
       DELAY = NORMAL; 
     delay(DELAY);
   }
+
+  unsigned long getTimestamp(){
+    return millis();
+  }
   
   //Include always this code when using the pulsioximeter sensor
   //=========================================================================
@@ -124,7 +135,9 @@
     if(retour == 1)
       accelDelay();
     else if(retour == 2)
-      DELAY = NORMAL;     
+      DELAY = NORMAL;
+    //else if (retour == "A")
+      // TO DO
   }
   
   void accelDelay(){

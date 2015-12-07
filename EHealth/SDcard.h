@@ -15,7 +15,7 @@ class SDcard{
     SDcard();
     void setup();
     void readfile();
-    void writefile(char type,double value);
+    void writefile(char type,double value, unsigned long timestamp_sd);
 };
 
 #endif

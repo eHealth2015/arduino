@@ -16,24 +16,32 @@ void SDcard::setup(){
     Serial.println("initialization done.");
 }
 
-//void SDcard::readfile(){
-//  myfile = SD.open("results.txt", FILE_READ); // Open the file in Read/Write mode
-//  while (myfile.available()) {
-//    char c = myfile.read();
-//    // Utiliser c pour récupérer les valeurs des capteurs
+//    void Bluetooth::data_sd(){
+//    String msg = ":C";
+//    msg.concat("|");
+//    msg.concat(millis());
+//    msg.concat("|");
+//    msg.concat("seqID");
+//    msg.concat("|");
+//    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
+//      String data = this->mem->getNext(); 
+//      msg.concat(data);
+//    }
+//    msg.concat(";");
+//    Serial.println(msg);
 //  }
-//  myfile.close();
-//}
 
-void SDcard::writefile(char type,double value){
+void SDcard::writefile(char type,double value, unsigned long timestamp_sd){
   File myfile;
   
   switch(type){
   case 'H':
     myfile = SD.open("airflow.txt", FILE_WRITE);
     if (myfile) {
-      myfile.println(value + '\n');
-      Serial.println(value + '\n');
+      myfile.print(":C|");
+      myfile.print(timestamp_sd);
+      myfile.print("|seqID|H,");
+      myfile.println(value);
       Serial.println("done.");
     }
     else {
