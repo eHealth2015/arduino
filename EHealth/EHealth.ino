@@ -1,10 +1,10 @@
+  #include <SD.h>
   #include <PinChangeInt.h>
   #include <eHealthClass.h>
   #include <Arduino.h>
   #include <MsTimer2.h>
   #include "Memory.h"
   #include "Bluetooth.h"
-  #include "SDcard.h"
   
   // Les valeurs qui vont être lues
   int airflow=0;
@@ -13,9 +13,6 @@
   
   // Compteur pulsiomètre
   int cont=0;
-
-  // Compteur temps
-  int timer=0;
   
   // Différentes vitesses de rafraichissement
   int NORMAL = 1000;
@@ -38,53 +35,33 @@
   // Flag pour l'interruption
   boolean flag = false;
 
-  Memory mem = Memory(480);
+  Memory mem = Memory(48);
   Bluetooth bt = Bluetooth(&mem);
-
-  SDcard sd;
   
   void appli()
   {
     //On acquiert les données
     airflow = eHealth.getAirFlow();
-    bpm = eHealth.getBPM();
+    /*bpm = eHealth.getBPM();
     if(bpm < 60 && bpm >= 0)
-      bpm += 100;
-    oxy = eHealth.getOxygenSaturation();
+      bpm += 100;*/
+    //oxy = eHealth.getOxygenSaturation();
     //temperature = eHealth.getTemperature();
     //pos = eHealth.getBodyPosition(); 
     //conductance = eHealth.getSkinConductance();
     //resistance = eHealth.getSkinResistance();
     //conductanceVol = eHealth.getSkinConductanceVoltage();
+    mem.save('A',airflow);
+    //mem.save('B',bpm);
+    //mem.save('O',oxy);
+    //mem.parsingJSON(airflow);//bpm,oxy
     
-    if (DELAY == FAST){
-      mem.save('A',airflow);
-      mem.save('B',bpm);
-      mem.save('O',oxy);
-      //mem.save('T',temperature);
-      //mem.save('P',pos);
-      //mem.save('C',conductance);
-      //mem.save('R',resistance);
-      //mem.save('V',conductanceVol);
-      bt.data(); // Doit être effectué quand on veut envoyer les données.
-    }
-    else if (DELAY == NORMAL){
-      // Store the values in the SD card
-      sd.writefile('A',airflow);
-      sd.writefile('B',bpm);
-      sd.writefile('O',oxy);
-      if (timer == 10){
-        // Process valeurs moyennes
-        // Stocker les valeurs moyennes
-        //mem.save('A',mean_airflow);
-        //mem.save('B',mean_bpm);
-        //mem.save('O',mean_oxy);
-        bt.data();
-        timer = 0;
-        // Foonction delete sur carte SD des 3 fichiers
-      }   
-    }
-    
+    //mem.save('T',temperature);
+    //mem.save('P',pos);
+    //mem.save('C',conductance);
+    //mem.save('R',resistance);
+    //mem.save('V',conductanceVol);
+    bt.data();
   }
   
   void setup() 
@@ -95,20 +72,19 @@
     bt.setup();
     
     // init SPo2
-    eHealth.initPulsioximeter();
+    //eHealth.initPulsioximeter();
   
     //Attach the interruptions for using the pulsioximeter.
-    PCintPort::attachInterrupt(6, readPulsioximeter, RISING);
+    //PCintPort::attachInterrupt(6, readPulsioximeter, RISING);
   
     //Init Position
-    eHealth.initPositionSensor();
+    //eHealth.initPositionSensor();
     
   }
 
   void loop() 
   {
     appli();
-    timer+=1;
     if(DELAY == FAST && millis() >= stop_time)
       DELAY = NORMAL; 
     delay(DELAY);

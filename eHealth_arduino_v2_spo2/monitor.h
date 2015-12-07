@@ -13,7 +13,7 @@ public:
 
     byte monitorHeart(byte compteur, int bpm);   // compare la valeur bpm à une valeur de référence
     byte monitorSPO2(byte compteur, int oxy);
-    //byte monitorBreathing(byte compteur, int period);
+    byte monitorBreathing(byte compteur, int period);
     //byte monitorAirflow(byte compteur, int breath);
 
     byte correlation(boolean _apneeFlag);        // retourne le diagnostic

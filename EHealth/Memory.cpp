@@ -3,7 +3,7 @@
 Memory::Memory(){}
 Memory::Memory(unsigned int _size){
   this->size = _size;
-  this->data = (measure*) malloc(this->size*5);
+  this->data = (measure*) malloc(this->size*sizeof(measure));
   
   for(int i = 0; i < this->size; i++){
     this->data[i].type = 'A';
@@ -14,7 +14,6 @@ Memory::Memory(unsigned int _size){
 
 void Memory::setup(){
 }
-
 void Memory::save(char type,double value){
   this->data[this->nextSave].type = type;
   this->data[this->nextSave].time = millis();
@@ -46,6 +45,29 @@ String Memory::getNext(){
    
   return data;
     
+}
+
+
+JsonObject& Memory::parsingJSON(double value1){ //, double value2, double value3
+  
+    StaticJsonBuffer<200> jsonBuffer;
+    // Build object tree in memory
+    JsonObject& root = jsonBuffer.createObject();
+    
+    root["type"] = "DATA";
+    root["time"] = millis();
+    
+    JsonArray& sensor = root.createNestedArray("sensor");
+    JsonArray& data = root.createNestedArray("data");
+    sensor.add("A");
+    data.add(value1, 3);  // 6 is the number of decimals to print
+    //sensor.add("B");
+    //data.add(value2, 3);
+    //sensor.add("O");
+    //data.add(value3, 3);  
+    root.printTo(Serial);
+
+    return root;
 }
 
 String Memory::doubleToString(double input,int decimalPlaces){
