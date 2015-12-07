@@ -3,7 +3,7 @@
   Bluetooth::Bluetooth(){}
   Bluetooth::Bluetooth(Memory* _mem){
     this->mem = _mem;
-    this->trame.reserve(200);
+    //this->trame.reserve(5);
   }
   
   void Bluetooth::setup(){
@@ -27,13 +27,13 @@
   }
   
   int Bluetooth::process(){
-    if(this->trame.length() == 6){
-      if(this->trame.substring(0,5) == "HELLO")
+    if(this->trame.length() == 3){
+      if(this->trame.substring(0,1) == "A")
         this->hello();
     }
     else if(this->trame.length() == 5){
-      if(this->trame.substring(0,4) == "DATA")
-        this->data();
+      if(this->trame.substring(0,1) == "B")
+        this->data_rt();
       else if(this->trame.substring(0,4) == "MORE")
         return 1;
       else if(this->trame.substring(0,4) == "STOP")
@@ -49,23 +49,39 @@
    * A MODIFIER
    **/
   void Bluetooth::hello(){
-    String msg = "HELLO;";
-    msg.concat(millis());
+    String msg = ":A";
     msg.concat(";");
-    msg.concat(SNUMBER);
-    msg.concat("|");
-    msg.concat(FIRMWARE);
     Serial.println(msg);
   }
   
-  void Bluetooth::data(){
-    String msg = "DATA";
-    msg.concat(millis());
-    for(int i = 0; i<3;i++){
+  void Bluetooth::data_rt(){
+    String msg = ":B";
+    msg.concat("|");
+    msg.concat(millis());// Timetstamp = millis() + clockGab
+    msg.concat("|");
+    msg.concat("seqID");
+    msg.concat("|");
+    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
       String data = this->mem->getNext();
-      msg.concat(";");
       msg.concat(data);
     }
+    msg.concat(";");
+    Serial.println(msg);
+  }
+
+    void Bluetooth::data_sd(){
+    String msg = ":C";
+    msg.concat("|");
+    msg.concat(millis());
+    msg.concat("|");
+    msg.concat("seqID");
+    msg.concat("|");
+    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
+      String data = this->mem->getNext(); 
+      //msg.concat(";");
+      msg.concat(data);
+    }
+    msg.concat(";");
     Serial.println(msg);
   }
   

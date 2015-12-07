@@ -27,17 +27,15 @@ void Memory::save(char type,double value){
 
 String Memory::getNext(){
   String data;
-  data.reserve(100);
+  //data.reserve(100);
   
   if(this->nextSend != this->nextSave){
     long time = this->data[this->nextSend].time;
     double value = this->data[this->nextSend].value;
     char type = this->data[this->nextSend].type;
     
-    data.concat(time);
-    data.concat("|");
     data.concat(type);
-    data.concat("|");
+    data.concat(",");
     data.concat(doubleToString(value,2));
 
     this->nextSend = (this->nextSend+1)%this->size;
@@ -45,29 +43,6 @@ String Memory::getNext(){
    
   return data;
     
-}
-
-
-JsonObject& Memory::parsingJSON(double value1){ //, double value2, double value3
-  
-    StaticJsonBuffer<200> jsonBuffer;
-    // Build object tree in memory
-    JsonObject& root = jsonBuffer.createObject();
-    
-    root["type"] = "DATA";
-    root["time"] = millis();
-    
-    JsonArray& sensor = root.createNestedArray("sensor");
-    JsonArray& data = root.createNestedArray("data");
-    sensor.add("A");
-    data.add(value1, 3);  // 6 is the number of decimals to print
-    //sensor.add("B");
-    //data.add(value2, 3);
-    //sensor.add("O");
-    //data.add(value3, 3);  
-    root.printTo(Serial);
-
-    return root;
 }
 
 String Memory::doubleToString(double input,int decimalPlaces){

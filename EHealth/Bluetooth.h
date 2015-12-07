@@ -27,7 +27,8 @@ class Bluetooth{
     
     void hello();
     void sync();
-    void data();
+    void data_rt();
+    void data_sd();
     void error();
 };
 

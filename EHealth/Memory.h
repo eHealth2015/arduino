@@ -29,7 +29,6 @@ class Memory{
     Memory(unsigned int _size);
     void setup();
     void save(char type,double value);
-    JsonObject& parsingJSON(double value1);//, double value2, double value3
     String getNext();
 };
 

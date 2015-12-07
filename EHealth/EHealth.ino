@@ -1,15 +1,15 @@
-  #include <SD.h>
   #include <PinChangeInt.h>
   #include <eHealthClass.h>
   #include <Arduino.h>
   #include <MsTimer2.h>
   #include "Memory.h"
   #include "Bluetooth.h"
+  #include "SDcard.h"
   
   // Les valeurs qui vont être lues
   int airflow=0;
-  int bpm=0;
-  int oxy=0;
+  //int bpm=0;
+  //int oxy=0;
   
   // Compteur pulsiomètre
   int cont=0;
@@ -35,9 +35,14 @@
   // Flag pour l'interruption
   boolean flag = false;
 
+  // Compteur temps
+  int timer=0;
+  File myfile;
+
   Memory mem = Memory(48);
   Bluetooth bt = Bluetooth(&mem);
-  
+  SDcard sd;
+ 
   void appli()
   {
     //On acquiert les données
@@ -51,25 +56,36 @@
     //conductance = eHealth.getSkinConductance();
     //resistance = eHealth.getSkinResistance();
     //conductanceVol = eHealth.getSkinConductanceVoltage();
-    mem.save('A',airflow);
-    //mem.save('B',bpm);
-    //mem.save('O',oxy);
-    //mem.parsingJSON(airflow);//bpm,oxy
     
-    //mem.save('T',temperature);
-    //mem.save('P',pos);
-    //mem.save('C',conductance);
-    //mem.save('R',resistance);
-    //mem.save('V',conductanceVol);
-    bt.data();
+     if (DELAY == FAST){
+        mem.save('H',airflow);
+        bt.data_rt(); // Doit être effectué quand on veut envoyer les données.
+     }
+    else if (DELAY == NORMAL){
+      // Store the values in the SD card
+      sd.writefile('H',airflow);
+      timer++;
+      if (timer == 10){
+        // Process valeurs moyennes
+        // Stocker les valeurs moyennes "mean_ariflow"
+        mem.save('H',airflow);
+        bt.data_sd();
+        timer = 0;
+        // Foonction delete sur carte SD des 3 fichiers
+      }
+    }
+    
+    //mem.save('H',airflow);
+    //bt.data_rt();
   }
   
   void setup() 
   {
     Serial.begin(115200); // initialisation de la connexion série (avec le module bluetooth)
-    
+  
     mem.setup();
     bt.setup();
+    sd.setup();
     
     // init SPo2
     //eHealth.initPulsioximeter();
