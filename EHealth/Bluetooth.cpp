@@ -9,20 +9,11 @@
   void Bluetooth::setup(){
   }
   
-  int Bluetooth::read(){
-    int more;
+  String Bluetooth::read(){
     Serial.println("lecture");
     while (Serial.available()) {
-      char inChar = (char)Serial.read(); 
-      this->trame += inChar;
-      
-      if (inChar == '\r' || inChar == '\n') {
-        more = this->process();
-        Serial.println(this->trame);
-        this->trame = "";
-        Serial.println(more);
-        return more;
-      }
+      String inString = Serial.readStringUntil('\n');
+      return inString;
     }
   }
   
@@ -33,7 +24,8 @@
     }
     else if(this->trame.length() == 5){
       if(this->trame.substring(0,1) == "B")
-        this->data_rt();
+        //this->data_rt(timestamp);
+        ;
       else if(this->trame.substring(0,4) == "MORE")
         return 1;
       else if(this->trame.substring(0,4) == "STOP")
@@ -49,39 +41,37 @@
    * A MODIFIER
    **/
   void Bluetooth::hello(){
-    String msg = ":A";
-    msg.concat(";");
+    String msg = "A";
+    //msg.concat(";");
     Serial.println(msg);
   }
   
-  void Bluetooth::data_rt(){
-    String msg = ":B";
+  void Bluetooth::data_rt(char type,double value,uint64_t timestamp, int eeprom){
+    String msg = "F";
     msg.concat("|");
-    msg.concat(millis());// Timetstamp = millis() + clockGab
-    msg.concat("|");
-    msg.concat("seqID");
-    msg.concat("|");
-    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
-      String data = this->mem->getNext();
-      msg.concat(data);
-    }
-    //msg.concat(";");
+    uint64_t xx = timestamp/1000000000ULL;
+      if (xx >0) msg.concat((long)xx);
+      msg.concat((long)(timestamp-xx*1000000000));
+      msg.concat("|");
+      msg.concat(eeprom);
+      msg.concat("|");
+      msg.concat(type);
+      msg.concat(",");
+      msg.concat(value);
+//    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
+//      String data = this->mem->getNext();
+//      msg.concat(data);
+//    }
     Serial.println(msg);
   }
 
     void Bluetooth::data_sd(){
-    String msg = ":C";
-    msg.concat("|");
-    msg.concat(millis());
-    msg.concat("|");
-    msg.concat("seqID");
-    msg.concat("|");
-    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
-      String data = this->mem->getNext(); 
-      msg.concat(data);
-    }
+    //Read SD function (line by line and send to Serial)
+    //String msg;
+    //msg.concat(data);
+    //}
     //msg.concat(";");
-    Serial.println(msg);
+    //Serial.println(msg);
   }
   
   /**

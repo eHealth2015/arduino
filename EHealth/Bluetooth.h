@@ -22,12 +22,12 @@ class Bluetooth{
     Bluetooth();
     Bluetooth(Memory* _mem);
     void setup();
-    int read();
+    String read();
     int process();
     
     void hello();
     void sync();
-    void data_rt();
+    void data_rt(char type,double value,uint64_t timestamp, int eeprom);
     void data_sd();
     void error();
 };

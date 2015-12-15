@@ -1,5 +1,8 @@
 #include "SDcard.h"
 
+SdFat SD;
+File myfile;
+
 SDcard::SDcard(){}
 void SDcard::setup(){
 
@@ -9,6 +12,7 @@ void SDcard::setup(){
   }
   
   Serial.print("Initializing SD card...");
+  pinMode(10,OUTPUT);
   if (!SD.begin(4)) {
       Serial.println("Initialization failed!");
       return;
@@ -16,41 +20,46 @@ void SDcard::setup(){
     Serial.println("initialization done.");
 }
 
-//    void Bluetooth::data_sd(){
-//    String msg = ":C";
-//    msg.concat("|");
-//    msg.concat(millis());
-//    msg.concat("|");
-//    msg.concat("seqID");
-//    msg.concat("|");
-//    for(int i = 0; i<1;i++){ // nombre de capteurs = 1
-//      String data = this->mem->getNext(); 
-//      msg.concat(data);
-//    }
-//    msg.concat(";");
-//    Serial.println(msg);
-//  }
+void SDcard::writefile(double value, uint64_t timestamp_sd, int eeprom){
+    
+    myfile = SD.open("results.txt", FILE_WRITE);
 
-void SDcard::writefile(char type,double value, unsigned long timestamp_sd){
-  File myfile;
-  
-  switch(type){
-  case 'H':
-    myfile = SD.open("airflow.txt", FILE_WRITE);
     if (myfile) {
-      myfile.print(":C|");
-      myfile.print(timestamp_sd);
-      myfile.print("|seqID|H,");
+      myfile.print("G|");
+      uint64_t xx = timestamp_sd/1000000000ULL;
+      if (xx >0) myfile.print((long)xx);
+      myfile.print((long)(timestamp_sd-xx*1000000000));
+      myfile.print("|");
+      myfile.print(eeprom);
+      myfile.print("|H,");
       myfile.println(value);
-      Serial.println("done.");
+      myfile.close();
     }
     else {
-      Serial.println("error opening airflow.txt");
+      Serial.println("error opening results.txt");
     }
+  }
+
+void SDcard::readfile(){
+
+  // re-open the file for reading:
+  myfile = SD.open("results.txt");
+  if (myfile) {
+    // read from the file until there's nothing else in it:
+    while (myfile.available()) {
+      Serial.write(myfile.read());
+    }
+    // close the file:
     myfile.close();
-    break;
-    
-   default:
-   break;
+  } else {
+    Serial.println("error opening results.txt");
   }
-  }
+}
+
+void SDcard::removefile(){
+   if (SD.exists("results.txt")) {
+      SD.remove("results.txt");
+   }
+}
+
+

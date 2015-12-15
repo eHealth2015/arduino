@@ -2,10 +2,12 @@
   #include <eHealthClass.h>
   #include <Arduino.h>
   #include <MsTimer2.h>
+  #include <EEPROM.h>
+  
   #include "Memory.h"
   #include "Bluetooth.h"
   #include "SDcard.h"
-  
+
   // Les valeurs qui vont être lues
   double airflow=0;
   //int bpm=0;
@@ -19,11 +21,11 @@
   int FAST = 333;
   
   //Fréquence de rafraichissement des capteurs
-  int DELAY = NORMAL;
+  int DELAY = FAST;
   
-  //Temps pendant lequel on accélère les mesures à la réception d'un message more
-  int ACCEL_TIME = 15000;
-  int stop_time = 0;
+//  //Temps pendant lequel on accélère les mesures à la réception d'un message more
+//  int ACCEL_TIME = 15000;
+//  int stop_time = 0;
   
   //les autres capteurs
   float temperature = 0; //body temperature
@@ -38,7 +40,15 @@
   // Compteur temps
   int timer=0;
   double mean_airflow=0;
-  int timestamp=0;  
+
+  int timestampStringLength = 13;
+  char timestampChar[13+1];
+  uint64_t timestamp = 0;
+  uint64_t power = 1000000000000;
+
+  //EEPROM
+  int address = 0;
+  int valueEEPROM;
 
   Memory mem = Memory(48);
   Bluetooth bt = Bluetooth(&mem);
@@ -46,6 +56,8 @@
  
   void appli()
   {
+    if (timestamp != 0){
+    
     //On acquiert les données
     airflow = eHealth.getAirFlow();
     /*bpm = eHealth.getBPM();
@@ -57,43 +69,36 @@
     //conductance = eHealth.getSkinConductance();
     //resistance = eHealth.getSkinResistance();
     //conductanceVol = eHealth.getSkinConductanceVoltage();
-    
+     
      if (DELAY == FAST){
-        mem.save('H',airflow);
-        bt.data_rt(); // Doit être effectué quand on veut envoyer les données.
+      bt.data_rt('H',airflow,getTimestamp(),valueEEPROM);
      }
     else if (DELAY == NORMAL){
       // Store the values in the SD card
-      
       timer++;
       mean_airflow += airflow;
-      Serial.println(airflow);
       if (timer == 10){
-        // Process valeurs moyennes
-        // Stocker les valeurs moyennes "mean_ariflow"
-        sd.writefile('H',(mean_airflow/timer),getTimestamp());
-        Serial.println("MEAN");
-        Serial.println((mean_airflow/timer));
+        sd.writefile((mean_airflow/timer),getTimestamp(),valueEEPROM);
         mean_airflow=0;
-        //mem.save('H',airflow);
-        //bt.data_sd();
         timer = 0;
-
-        // Foonction delete sur carte SD des 3 fichiers
       }
     }
-    //mem.save('H',airflow);
-    //bt.data_rt();
+    }
+    else{
+      ;
+    }
   }
   
   void setup() 
   {
     Serial.begin(115200); // initialisation de la connexion série (avec le module bluetooth)
-  
+
+    valueEEPROM = EEPROM.read(address);
+    EEPROM.write(address, valueEEPROM+1);
     mem.setup();
     bt.setup();
     sd.setup();
-    
+
     // init SPo2
     //eHealth.initPulsioximeter();
   
@@ -108,39 +113,58 @@
   void loop() 
   {
     appli();
-    if(DELAY == FAST && millis() >= stop_time)
-      DELAY = NORMAL; 
+//    if(DELAY == FAST && millis() >= stop_time)
+//      DELAY = NORMAL; 
     delay(DELAY);
   }
 
-  unsigned long getTimestamp(){
-    return millis();
+  uint64_t getTimestamp(){
+    return timestamp + millis();
   }
   
-  //Include always this code when using the pulsioximeter sensor
-  //=========================================================================
-  void readPulsioximeter()
-  {  
-    cont ++;
-    if (cont == 50) 
-    { //Get only of one 50 measures to reduce the latency
-      eHealth.readPulsioximeter();  
-      cont = 0;  
-    }
-  }
+//  //Include always this code when using the pulsioximeter sensor
+//  //=========================================================================
+//  void readPulsioximeter()
+//  {  
+//    cont ++;
+//    if (cont == 50) 
+//    { //Get only of one 50 measures to reduce the latency
+//      eHealth.readPulsioximeter();  
+//      cont = 0;  
+//    }
+//  }
   
   /* Event se déclenchant lorsqu'une donnée arrive sur le port série */
   void serialEvent(){
-    int retour = bt.read();
-    if(retour == 1)
-      accelDelay();
-    else if(retour == 2)
+    String retour = bt.read();
+    Serial.println(retour); 
+    String type = retour.substring(0,1);
+
+    if (type=="A"){ // Get the TIMESTAMP
+      String timestampString = retour.substring(2);
+      timestampString.toCharArray(timestampChar, 13+1);
+      for (int i = 0; i < 13; i++) {
+        timestamp += power * (timestampChar[i] - 48);
+        power /= 10;
+      }
+    }
+    else if (type=="B"){
+      DELAY = FAST;
+    }
+    else if (type=="C"){
+      //bt.data_sd();
+      sd.readfile();
+      sd.removefile();
+    }
+    else if (type=="D"){
       DELAY = NORMAL;
-    //else if (retour == "A")
-      // TO DO
+    }
+    else{
+      Serial.println("Error Type unknown");
+    }
   }
   
-  void accelDelay(){
-    DELAY = FAST;
-    stop_time = millis() + ACCEL_TIME;
-  }
+//  void accelDelay(){
+//    DELAY = FAST;
+//    stop_time = millis() + ACCEL_TIME;
+//  }

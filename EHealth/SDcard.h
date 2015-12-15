@@ -1,7 +1,8 @@
 #ifndef SDCARD_H
 #define SDCARD_H
 
-#include <SD.h>
+//#include <SD.h>
+#include <SdFat.h>
 #include <SPI.h>
 
 #if ARDUINO < 100
@@ -14,8 +15,9 @@ class SDcard{
   public:
     SDcard();
     void setup();
+    void writefile(double value, uint64_t timestamp_sd, int eeprom);
     void readfile();
-    void writefile(char type,double value, unsigned long timestamp_sd);
+    void removefile();
 };
 
 #endif
