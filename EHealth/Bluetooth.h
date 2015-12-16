@@ -15,7 +15,6 @@
 
 class Bluetooth{
   private:
-    String trame;
     Memory* mem;
     
   public:
@@ -23,13 +22,9 @@ class Bluetooth{
     Bluetooth(Memory* _mem);
     void setup();
     String read();
-    int process();
-    
-    void hello();
-    void sync();
-    void data_rt(char type,double value,uint64_t timestamp, int eeprom);
+    void data_rt(uint64_t timestamp, int eeprom);
+    void data_alert(int nb_alert,uint64_t timestamp, int eeprom);
     void data_sd();
-    void error();
 };
 
 #endif

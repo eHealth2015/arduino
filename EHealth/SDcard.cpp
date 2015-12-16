@@ -4,8 +4,11 @@ SdFat SD;
 File myfile;
 
 SDcard::SDcard(){}
-void SDcard::setup(){
+SDcard::SDcard(Memory* _mem){
+  this->mem = _mem;
+}
 
+void SDcard::setup(){
   Serial.begin(115200);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
@@ -13,6 +16,7 @@ void SDcard::setup(){
   
   Serial.print("Initializing SD card...");
   pinMode(10,OUTPUT);
+  
   if (!SD.begin(4)) {
       Serial.println("Initialization failed!");
       return;
@@ -20,10 +24,10 @@ void SDcard::setup(){
     Serial.println("initialization done.");
 }
 
-void SDcard::writefile(double value, uint64_t timestamp_sd, int eeprom){
+void SDcard::writefile(uint64_t timestamp_sd, int eeprom){
+  
+    myfile = SD.open("data.txt", FILE_WRITE);
     
-    myfile = SD.open("results.txt", FILE_WRITE);
-
     if (myfile) {
       myfile.print("G|");
       uint64_t xx = timestamp_sd/1000000000ULL;
@@ -31,19 +35,27 @@ void SDcard::writefile(double value, uint64_t timestamp_sd, int eeprom){
       myfile.print((long)(timestamp_sd-xx*1000000000));
       myfile.print("|");
       myfile.print(eeprom);
-      myfile.print("|H,");
-      myfile.println(value);
+      myfile.print("|");
+      for(int i = 0; i<3;i++){ // nombre de capteurs = 3
+        String data = this->mem->getNext();
+        myfile.print(data);
+        if (i!=2)
+        myfile.print("|");
+      }
+      myfile.println("");
+      //myfile.print("|H,");
+      //myfile.println(value);
       myfile.close();
     }
     else {
-      Serial.println("error opening results.txt");
+      Serial.println("error opening data.txt");
     }
   }
 
 void SDcard::readfile(){
 
   // re-open the file for reading:
-  myfile = SD.open("results.txt");
+  myfile = SD.open("data.txt");
   if (myfile) {
     // read from the file until there's nothing else in it:
     while (myfile.available()) {
@@ -52,14 +64,12 @@ void SDcard::readfile(){
     // close the file:
     myfile.close();
   } else {
-    Serial.println("error opening results.txt");
+    Serial.println("error opening data.txt");
   }
 }
 
 void SDcard::removefile(){
-   if (SD.exists("results.txt")) {
-      SD.remove("results.txt");
+   if (SD.exists("data.txt")) {
+      SD.remove("data.txt");
    }
 }
-
-

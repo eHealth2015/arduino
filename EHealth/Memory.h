@@ -11,7 +11,6 @@
 
 struct measure {
   char  type;
-  long  time;
   double  value;
 };
 
@@ -21,7 +20,6 @@ class Memory{
     measure* data;
     unsigned int nextSave;
     unsigned int nextSend;
-    String doubleToString(double input,int decimalPlaces);
   
   public:
     Memory();
