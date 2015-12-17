@@ -42,7 +42,7 @@ void SDcard::writefile(uint64_t timestamp_sd, int eeprom){
         if (i!=2)
         myfile.print("|");
       }
-      myfile.println("");
+      myfile.write('\n');
       //myfile.print("|H,");
       //myfile.println(value);
       myfile.close();

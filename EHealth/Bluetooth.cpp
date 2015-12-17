@@ -30,7 +30,8 @@
       if (i!=2)
       msg.concat("|");
     }
-    Serial.println(msg);
+    msg.concat('\n');
+    Serial.print(msg);
   }
 
   void Bluetooth::data_alert(int nb_alert,uint64_t timestamp, int eeprom){
@@ -48,7 +49,8 @@
       if (i!=nb_alert-1)
       msg.concat("|");
     }
-    Serial.println(msg);
+    msg.concat('\n');
+    Serial.print(msg);
   }
 
     void Bluetooth::data_sd(){

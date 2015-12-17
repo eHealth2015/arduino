@@ -55,7 +55,7 @@
  
   void appli()
   {
-    //if (timestamp != 0){
+    if (timestamp != 0){
     
     //On acquiert les données
     airflow = eHealth.getAirFlow();
@@ -133,7 +133,7 @@
       }
       timer++;
     }
-    //}
+    }
     else{
       ;
     }
@@ -184,7 +184,7 @@
   /* Event se déclenchant lorsqu'une donnée arrive sur le port série */
   void serialEvent(){
     String retour = bt.read();
-    Serial.println(retour); 
+    //Serial.println(retour); 
     String type = retour.substring(0,1);
 
     if (type=="A"){ // Get the TIMESTAMP
